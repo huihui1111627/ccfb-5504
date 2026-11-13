@@ -1,0 +1,26 @@
+{
+  "name": "patchdiff-workbench",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser-side binary patch diffing workbench for firmware security auditing",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "samples": "bash scripts/build-samples.sh",
+    "strip": "node --import tsx scripts/strip-elf.ts",
+    "test:conformance": "node --import tsx tests/conformance.ts samples/bin/*.o",
+    "test:diff": "for a in x86_64 aarch64; do for o in O0 O2; do for t in stripped unstripped; do node --import tsx tests/diff-test.ts $a $o $t; done; done; done",
+    "test:yara": "node --import tsx tests/yara-test.ts",
+    "test:e2e": "node --import tsx tests/e2e.ts",
+    "test": "npm run test:conformance && npm run test:yara && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "playwright": "^1.65.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  }
+}

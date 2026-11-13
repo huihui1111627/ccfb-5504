@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PatchDiff Workbench — Binary Patch Analysis</title>
+  <script type="module" crossorigin src="./assets/index-ByGw7kSp.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-D4rf7XZp.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">PD</span>
+      <div>
+        <h1>PatchDiff</h1>
+        <p>firmware patch workbench</p>
+      </div>
+    </div>
+    <nav id="nav">
+      <a href="#/library" data-route="library">① Sample Library</a>
+      <a href="#/disasm" data-route="disasm">② Disassembly</a>
+      <a href="#/cfg" data-route="cfg">③ Control-Flow Graph</a>
+      <a href="#/diff" data-route="diff">④ Patch Diff</a>
+      <a href="#/scan" data-route="scan">⑤ Rule Scanner</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div id="binary-count" class="stat-pill">0 binaries</div>
+      <div class="arch-badges">
+        <span class="badge x64">x86-64</span>
+        <span class="badge a64">AArch64</span>
+      </div>
+    </div>
+  </aside>
+  <main id="view" class="view"></main>
+  <div id="toast" class="toast hidden"></div>
+</body>
+</html>
