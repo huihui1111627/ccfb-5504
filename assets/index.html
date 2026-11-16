@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>考试负载均衡控制台</title>
+<link rel="stylesheet" href="/ui/styles.css" />
+</head>
+<body>
+<header>
+  <h1>考试负载均衡控制台</h1>
+  <div class="status">
+    <span id="health-dot" class="dot ok"></span>
+    <span id="health-text">连接中…</span>
+    <span class="sep">|</span>
+    <label>刷新
+      <select id="refresh-ms">
+        <option value="1000">1s</option>
+        <option value="2000" selected>2s</option>
+        <option value="5000">5s</option>
+      </select>
+    </label>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" data-tab="listeners">监听器</button>
+  <button class="tab" data-tab="backends">后端池</button>
+  <button class="tab" data-tab="connections">连接表</button>
+  <button class="tab" data-tab="health">健康检查</button>
+  <button class="tab" data-tab="traffic">流量曲线</button>
+</nav>
+
+<main>
+  <!-- 监听器 -->
+  <section id="tab-listeners" class="tab-panel active">
+    <h2>监听器</h2>
+    <table>
+      <thead><tr><th>名称</th><th>协议</th><th>监听地址</th><th>PROXY 协议</th><th>UDP 会话超时</th></tr></thead>
+      <tbody id="listeners-body"></tbody>
+    </table>
+  </section>
+
+  <!-- 后端池 -->
+  <section id="tab-backends" class="tab-panel">
+    <h2>后端池
+      <span class="hint">主组可用容量低于阈值时启用备组，恢复后缓慢切回</span>
+    </h2>
+    <div class="toolbar">
+      <div class="kpi" id="kpi-backup-share"></div>
+      <div class="kpi" id="kpi-primary-low"></div>
+    </div>
+    <div class="toolbar">
+      <fieldset>
+        <legend>按报名人数预热</legend>
+        <input id="prewarm-count" type="number" min="0" placeholder="报名人数，如 200000" style="width:220px"/>
+        <button id="btn-prewarm">预热连接池</button>
+        <span id="prewarm-result" class="hint"></span>
+      </fieldset>
+      <fieldset>
+        <legend>新增后端</legend>
+        <input id="be-id" placeholder="ID" style="width:100px"/>
+        <input id="be-addr" placeholder="127.0.0.1:9101" style="width:160px"/>
+        <select id="be-group"><option value="primary">主组</option><option value="backup">备组</option></select>
+        <input id="be-capacity" type="number" placeholder="容量" style="width:90px"/>
+        <button id="btn-add-backend">添加</button>
+      </fieldset>
+    </div>
+    <table>
+      <thead><tr>
+        <th>ID</th><th>地址</th><th>组</th><th>权重</th><th>容量</th>
+        <th>活跃连接</th><th>剩余容量</th><th>状态</th><th>预热目标/ worker</th><th>操作</th>
+      </tr></thead>
+      <tbody id="backends-body"></tbody>
+    </table>
+  </section>
+
+  <!-- 连接表 -->
+  <section id="tab-connections" class="tab-panel">
+    <h2>连接表</h2>
+    <div class="toolbar">
+      <input id="conn-q" placeholder="过滤：来源/后端地址/ID" style="width:260px"/>
+      <select id="conn-backend"><option value="">全部后端</option></select>
+      <button id="btn-conn-refresh">查询</button>
+      <span class="hint" id="conn-total"></span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>连接 ID</th><th>Worker</th><th>监听器</th><th>协议</th>
+        <th>来源地址</th><th>后端</th><th>后端地址</th>
+        <th>入字节</th><th>出字节</th><th>存活(ms)</th><th>空闲(ms)</th><th>状态</th>
+      </tr></thead>
+      <tbody id="connections-body"></tbody>
+    </table>
+  </section>
+
+  <!-- 健康检查 -->
+  <section id="tab-health" class="tab-panel">
+    <h2>健康检查与 SLO</h2>
+    <div class="cards">
+      <div class="card"><div class="card-label">Worker 数</div><div class="card-value" id="h-workers">-</div></div>
+      <div class="card"><div class="card-label">活跃连接</div><div class="card-value" id="h-active">-</div></div>
+      <div class="card"><div class="card-label">累计打开</div><div class="card-value" id="h-opened">-</div></div>
+      <div class="card"><div class="card-label">累计关闭</div><div class="card-value" id="h-closed">-</div></div>
+      <div class="card warn"><div class="card-label">强断连接</div><div class="card-value" id="h-forced">-</div></div>
+      <div class="card warn"><div class="card-label">强断比例</div><div class="card-value" id="h-forced-ratio">-</div></div>
+      <div class="card"><div class="card-label">无后端拒绝</div><div class="card-value" id="h-rejected">-</div></div>
+      <div class="card"><div class="card-label">TCP 建连 p99</div><div class="card-value" id="h-setup-p99">-</div></div>
+      <div class="card"><div class="card-label">转发延迟 p99</div><div class="card-value" id="h-relay-p99">-</div></div>
+      <div class="card"><div class="card-label">UDP RTT p99</div><div class="card-value" id="h-udp-p99">-</div></div>
+    </div>
+    <h3>每 Worker 明细</h3>
+    <table>
+      <thead><tr><th>Worker</th><th>活跃</th><th>打开</th><th>关闭</th><th>强断</th><th>入字节</th><th>出字节</th></tr></thead>
+      <tbody id="worker-body"></tbody>
+    </table>
+  </section>
+
+  <!-- 流量曲线 -->
+  <section id="tab-traffic" class="tab-panel">
+    <h2>流量曲线（最近 10 分钟，每秒采样）</h2>
+    <canvas id="traffic-canvas" width="1100" height="360"></canvas>
+    <div class="cards">
+      <div class="card"><div class="card-label">累计入字节</div><div class="card-value" id="t-bytes-in">-</div></div>
+      <div class="card"><div class="card-label">累计出字节</div><div class="card-value" id="t-bytes-out">-</div></div>
+      <div class="card"><div class="card-label">转发 p50 / p99</div><div class="card-value" id="t-relay">-</div></div>
+    </div>
+  </section>
+</main>
+
+<script src="/ui/app.js"></script>
+</body>
+</html>

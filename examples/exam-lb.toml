@@ -1,0 +1,71 @@
+# exam-lb 示例配置 —— 本地压测用
+
+# 0 = 自动按 CPU 核数
+workers = 0
+
+[admin]
+listen = "127.0.0.1:8080"
+control_socket = "/tmp/exam-lb-test.sock"
+pid_file = "/tmp/exam-lb-test.pid"
+
+[prewarm]
+pool_idle_per_worker = 4
+pool_max_idle_secs = 120
+warmup_retry_secs = 2
+
+[health]
+interval_secs = 3
+timeout_secs = 1
+fall = 2
+rise = 2
+
+[drain]
+deadline_secs = 30
+recover_step = 0.1
+recover_tick_secs = 2
+backup_threshold = 0.35
+
+# ---- 监听器 ----
+[[listeners]]
+name = "tcp-main"
+protocol = "tcp"
+listen = "127.0.0.1:9000"
+proxy_protocol = "v1"
+
+[[listeners]]
+name = "tcp-dualstack"
+protocol = "tcp"
+listen = "[::1]:9002"
+proxy_protocol = "off"
+
+[[listeners]]
+name = "udp-main"
+protocol = "udp"
+listen = "127.0.0.1:9001"
+udp_session_timeout_secs = 60
+udp_max_sessions = 0
+
+# ---- 后端 ----
+[[backends]]
+id = "p1"
+addr = "127.0.0.1:9101"
+weight = 100
+group = "primary"
+capacity = 100000
+check = "tcp"
+
+[[backends]]
+id = "p2"
+addr = "127.0.0.1:9102"
+weight = 100
+group = "primary"
+capacity = 100000
+check = "tcp"
+
+[[backends]]
+id = "b1"
+addr = "127.0.0.1:9201"
+weight = 100
+group = "backup"
+capacity = 100000
+check = "tcp"

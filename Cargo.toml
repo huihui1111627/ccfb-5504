@@ -1,0 +1,47 @@
+[package]
+name = "exam-lb"
+version = "0.1.0"
+edition = "2021"
+description = "Layer-4 TCP/UDP load balancer for online exam traffic"
+
+[[bin]]
+name = "exam-lb"
+path = "src/main.rs"
+
+[[bin]]
+name = "mock-backend"
+path = "src/bin/mock_backend.rs"
+
+[[bin]]
+name = "loadgen"
+path = "src/bin/loadgen.rs"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+arc-swap = "1"
+socket2 = { version = "0.5", features = ["all"] }
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-appender = "0.2"
+http-body-util = "0.1"
+hyper = { version = "1", features = ["server", "http1"] }
+hyper-util = { version = "0.1", features = ["tokio"] }
+bytes = "1"
+futures = "0.3"
+# Correct target-specific syscall types (msghdr/cmsghdr layout differs between
+# macOS and Linux) for the SCM_RIGHTS zero-downtime fd handover.
+libc = "0.2"
+
+[dev-dependencies]
+tempfile = "3"
