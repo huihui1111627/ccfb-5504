@@ -1,0 +1,12 @@
+# 仿真生成的 trace 与临时产物
+traces/
+/tmp/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/

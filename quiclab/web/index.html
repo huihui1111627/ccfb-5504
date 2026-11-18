@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>quiclab · QUIC 传输过程可视化</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🛰️</span>
+      <div>
+        <h1>quiclab</h1>
+        <p>QUIC 丢包恢复 / 拥塞控制 · 离散事件链路仿真</p>
+      </div>
+    </div>
+    <div class="topbar-meta" id="scenarioMeta">未加载场景</div>
+  </header>
+
+  <main class="layout">
+    <!-- 区块 1:连接列表 -->
+    <aside class="sidebar panel">
+      <div class="panel-head">
+        <h2>连接列表</h2>
+        <button id="refreshBtn" class="btn small" title="重新拉取清单">刷新</button>
+      </div>
+      <div class="filter-row">
+        <input id="filterInput" type="text" placeholder="按名称过滤…" />
+      </div>
+      <ul id="connList" class="conn-list">
+        <li class="muted">加载中…</li>
+      </ul>
+      <div class="conn-detail" id="connDetail"></div>
+    </aside>
+
+    <section class="content">
+      <!-- 区块 2:包号时间线 -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>包号时间线</h2>
+          <div class="legend">
+            <span class="lg sent">● 发送</span>
+            <span class="lg recv">● 接收</span>
+            <span class="lg ack">● 确认</span>
+            <span class="lg loss-p">● 包号阈值丢包</span>
+            <span class="lg loss-t">● 时间阈值丢包</span>
+            <span class="lg probe">▲ PTO 探测</span>
+          </div>
+        </div>
+        <div class="controls">
+          <label>端点
+            <select id="endpointSelect">
+              <option value="all">全部</option>
+              <option value="client">client</option>
+              <option value="server">server</option>
+            </select>
+          </label>
+          <label>包号空间
+            <select id="spaceSelect">
+              <option value="all">全部</option>
+              <option value="initial">Initial</option>
+              <option value="handshake">Handshake</option>
+              <option value="appdata">App-Data</option>
+            </select>
+          </label>
+        </div>
+        <canvas id="timelineCanvas" height="320"></canvas>
+      </div>
+
+      <!-- 区块 3:拥塞窗口曲线 -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>拥塞窗口曲线</h2>
+          <div class="legend">
+            <span class="lg cwnd">— cwnd(包数)</span>
+            <span class="lg ssthresh">— ssthresh</span>
+            <span class="lg ccswitch">◆ 算法切换</span>
+          </div>
+        </div>
+        <canvas id="cwndCanvas" height="240"></canvas>
+      </div>
+
+      <!-- 区块 4:往返时间估计 -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>往返时间估计 (ms)</h2>
+          <div class="legend">
+            <span class="lg latest">— latest</span>
+            <span class="lg smoothed">— smoothed</span>
+            <span class="lg minrtt">— min</span>
+            <span class="lg rttvar">— rttvar</span>
+          </div>
+        </div>
+        <canvas id="rttCanvas" height="220"></canvas>
+      </div>
+
+      <!-- 区块 5:丢包事件 -->
+      <div class="panel">
+        <div class="panel-head">
+          <h2>丢包 / PTO 事件</h2>
+          <div class="legend">
+            <span class="lg loss-p">包号阈值</span>
+            <span class="lg loss-t">时间阈值</span>
+            <span class="lg pto">PTO 超时</span>
+            <span class="lg persist">持续拥塞</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="lossTable">
+            <thead>
+              <tr>
+                <th>时间(ms)</th><th>端点</th><th>空间</th><th>包号</th>
+                <th>事件</th><th>触发原因 / 细节</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>
